@@ -22,8 +22,26 @@ var init = {
 
 	}
 
+	setCookie:function(cookieName,cookieValue,delays,domain,path,secure){
+		if(cookieName){
+			cookieValue || (cookieValue = "");
+			var cookie = cookieName + "=" + escape(cookieValue) + ";";
+			if(!isNaN(delayms)){
+				var date = new Date();
+				date.setTime(date.getTime() + 1e3 * delays);
+				cookie += "expires=" + date.toGMTString();
+			}
+
+			domain && (cookie += 'domain=' + 'domain' + ';');
+			cookie += s ? "path=" + path + ';' : 'path=/';
+			secure && (secure += 'secure'); 
+			document.cookie = cookie;
+		}
+
+	}
+
 	delCookie: function(cookieName,path,domain){
-		document.cookie = o + "=; expires = Mon, 26 Jul 1997 05:00:00 GMT; path=" + (path || '/') +"; " + (domain ? 'domain=' + domain + ';' : '');
+		document.cookie = cookieName + "=; expires = Mon, 26 Jul 1997 05:00:00 GMT; path=" + (path || '/') +"; " + (domain ? 'domain=' + domain + ';' : '');
 	}
 
 	jsonp: function(src){
@@ -40,6 +58,44 @@ var init = {
 			,a = "api/report?id=" + id + "&msg=" + p;
 			(new Image).src = a;
 		}
+	}
+
+	
+	/**
+	 * js下载
+	 * @param  {[type]}   url      [下载链接]
+	 * @param  {Function} callback [回调函数]
+	 * @param  {[type]}   options  [description]
+	 * @return {[type]}            [配置选项]
+	 */
+	jsLoader: function(url,callback,options){
+		options = options || {};
+		var head = document.getElementsByTagName('head')[0] || document.documentElement
+		,   script = document.createElement('script')
+		,   done = false;
+
+		script.src =url;
+		if(options.charset){
+			script.charset = options.charset;
+		}
+		script.onerror = script.onload = script.onreadystatechange = function(){
+			if(!done && (!this.readyState || this.readyState == 'loaded' || this.readyState == 'complete')){
+				done = true;
+				if(callback){
+					callback();
+				}
+				script.onerror = script.onload = script.onreadystatechange = null;
+				head.removeChild(script);
+			}
+		}
+	}
+
+	cssLoader: function(href){
+		var ele = document.createElement('link');
+		ele.href = href;
+		ele.rel = 'stylesheet';
+		ele.type = "text/css";
+		ele.getElementsByTagName('head')[0].appendChild(ele);
 	}
 
 }
