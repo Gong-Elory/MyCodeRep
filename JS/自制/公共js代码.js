@@ -34,12 +34,15 @@
  *       读写Cookie...........................................RWCookie
  * 		 转化对象为JSON格式...................................syntaxJSON
  * 		 
- *group 表格数据相关操作
+ *@group 表格数据相关操作
  *		 计算每一页数据的大小.................................calculatePageSizes
  *		 获取指定页的数据.....................................getPage
  * 
  *@group 其他操作 
  *       点赞和评论框计数显示效果.............................outNum
+ *
+ *@group 图片操作 
+ *       图片预加载.............................getImages
  */
 
 
@@ -82,8 +85,8 @@ function js_htmlspeacialchars_decode(html){
  * 获取此时格式化后的时间
  * @return {[string]} [格式化后的时间]
  */
-function getNowFormatDate(){
-	var day = new Date();
+function getNowFormatDate(date){
+	var day = new Date(date);
 	var Year = 0;
 	var Month = 0;
 	var Day = 0;
@@ -91,7 +94,8 @@ function getNowFormatDate(){
 	Year = day.getFullYear();
 	Month = day.getMonth() + 1;
 	Day = day.getDate();
-
+	Hours = day.getHours();
+	Minu= day.getMinutes();
 	CurrentDate += Year + "-";
 	if(Month >= 10){
 		CurrentDate += Month + "-";
@@ -104,6 +108,18 @@ function getNowFormatDate(){
 		CurrentDate += Day;
 	}else{
 		CurrentDate += "0" + Day;
+	}
+
+	if(Hours >=10){
+		CurrentDate += ' '+Hours;
+	}else{
+		CurrentDate += ' '+"0" + Hours;
+	}
+
+	if(Minu >=10){
+		CurrentDate += ':'+Minu;
+	}else{
+		CurrentDate += ':'+"0" + Minu;
 	}
 
 	return CurrentDate;
@@ -920,3 +936,51 @@ function calculatePageSizes(data) {
 	 //索引值通过给定的pageNumber，在initial数组中查询
     }, {})[initials[pageNumber - 1]] || [];
   }
+
+/**
+ * [getImages 图片预加载]
+ * @return {[type]} [description]
+ */
+  function getImage(srcs, callback) {
+	    $.imgsCache = $.imgsCache || {};
+	    var defer = 0;
+	    var promise = srcs.length;
+	    for (var i in srcs) {
+	        // 已经缓存过的不再下载
+	        if ($.imgsCache[srcs[i]]) {
+	            defer ++;
+	            if (defer == promise) {
+	                console.log('images done');
+	                callback && callback();
+	            }
+	            continue;
+	        }
+	        var imgElm = new Image();
+	        imgElm.onload = function() {
+	            $.imgsCache[imgElm.src] = imgElm;
+	            defer ++;
+	            if (defer == promise) {
+	                console.log('images done');
+	                callback && callback();
+	            }
+	        }
+	        imgElm.onerror=imgElm.onload;
+	        imgElm.src = srcs[i];
+	    }
+	}
+	var srcs=[
+	    '//sqimg.qq.com/qq_product_operations/im/mobileqq/pc/7.2.0/1920/my-0.jpg',
+	    '//sqimg.qq.com/qq_product_operations/im/mobileqq/pc/7.2.0/1920/my-1.jpg',
+	    '//sqimg.qq.com/qq_product_operations/im/mobileqq/pc/7.2.0/1920/my-2.jpg',
+	    '//sqimg.qq.com/qq_product_operations/im/mobileqq/pc/7.2.0/1920/my-3.jpg',
+	    '//sqimg.qq.com/qq_product_operations/im/mobileqq/pc/7.2.0/1920/my-4.jpg',
+	    '//sqimg.qq.com/qq_product_operations/im/mobileqq/pc/7.2.0/1920/my-5.jpg'
+	];
+	getImage(srcs,
+	        function(){
+	            for(var i=0;i<srcs.length-1;i++)
+	            {
+	                var id=i+5;
+	                $("#img"+id).attr("src",srcs[i]);
+	            }
+	        });
