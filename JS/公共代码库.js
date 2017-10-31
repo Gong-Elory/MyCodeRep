@@ -32,17 +32,24 @@
  *@group 文件相关操作
  *
  *       读写Cookie...........................................RWCookie
- * 		 转化对象为JSON格式...................................syntaxJSON
+ * 		   转化对象为JSON格式...................................syntaxJSON
  * 		 
  *@group 表格数据相关操作
- *		 计算每一页数据的大小.................................calculatePageSizes
- *		 获取指定页的数据.....................................getPage
+ *		   计算每一页数据的大小.................................calculatePageSizes
+ *		   获取指定页的数据.....................................getPage
  * 
  *@group 其他操作 
  *       点赞和评论框计数显示效果.............................outNum
  *
  *@group 图片操作 
- *       图片预加载.............................getImages
+ *       图片预加载...........................................getImages
+ *
+ *@group JSONP
+ * 			 封装的JSONP对象......................................JSONP
+ *
+ *@group 空对象判断
+ *			 判断对象是否为{},undefined,null......................isEmpty
+ * 			
  */
 
 
@@ -151,13 +158,13 @@ function outNum(num){
 	if(num < 1000){
 		return ''+num;
 	}else if(num >= 1000 && num < 10000){
-		return (num / 1000).toFixed(1)+"K";
+		return (num / 1000).toFixed(1)+"k";
 	}else if(num >= 10000 && num < 100000){
-		return (num / 10000).toFixed(1)+"W";
-	}else if(num >0 100000 && num < 1000000){
-		return (num / 10000).toFixed(0)+"W";
+		return (num / 10000).toFixed(1)+"w";
+	}else if(num >100000 && num < 1000000){
+		return (num / 10000).toFixed(0)+"w";
 	}else {
-		return "99W";
+		return "99w";
 	}
 }
 
@@ -977,10 +984,90 @@ function calculatePageSizes(data) {
 	    '//sqimg.qq.com/qq_product_operations/im/mobileqq/pc/7.2.0/1920/my-5.jpg'
 	];
 	getImage(srcs,
-	        function(){
-	            for(var i=0;i<srcs.length-1;i++)
-	            {
-	                var id=i+5;
-	                $("#img"+id).attr("src",srcs[i]);
-	            }
-	        });
+	  function(){
+	      for(var i=0;i<srcs.length-1;i++)
+	      {
+	          var id=i+5;
+	          $("#img"+id).attr("src",srcs[i]);
+	      }
+	  });
+
+/**
+ * [JSONP JSONP方法]
+ * @type {Object}
+ */
+JSONP = {
+  now(){
+    return Date.now()
+  },
+  rand(){
+    return Math.random().toString().substr(2)
+  },
+  removeElem(elem) {
+    const parent = elem.parentNode
+    if( parent && parent.nodeType !== 11) {
+      parent.removeChild(elem)
+    }
+  },
+  parseData(data) {
+    let ret = ""
+    if(typeof data == "string") {
+      ret = data
+    } else if (typeof data === 'object'){
+      for(let key in data) {
+        ret += '&' + key + '=' + encodeURIComponent(data[key])
+      }
+    }
+    ret += '&_time' + '=' + this.now()
+    ret = ret.substr(1)
+    return ret
+  },
+  getJSON(url, data, func, callback="callback"){
+    let name;
+    url = url + (url.indexOf('?') === -1 ? '?' : '&') + this.parseData(data)
+    
+    if(callback == 'callback') {
+      let match = /callback=(\w+)/.exec(url);
+      if(match && match[1]) {
+        name = match[1]
+      } else {
+        name = "jsonp_" + this.now()
+        url = url.replace(`callback=?`, `callback=${name}`)
+        url = url.replace(`callback=%3F`, `callback=${name}`)
+      }
+    } else {
+      name = data[callback]
+      url = url.replace(`${callback}=?`, `${callback}=${name}`)
+      url = url.replace(`${callback}=%3F`, `${callback}=${name}`)
+    }  
+    let script = document.createElement('script')
+    script.type = 'text/javascript'
+    script.src = url
+    console.log('url',url)
+    script.id = 'id_' + name
+    window[name] = function(json) {
+      window[name] = null
+      var elem = document.getElementById('id_' + name)
+      JSONP.removeElem(elem)
+      func(json)
+      console.log('has')
+    }
+    
+    let head = document.getElementsByTagName('head')[0]
+    if (head) {
+      head.appendChild(script)
+    }
+  }
+}
+
+/**
+ * [isEmpty 对象是否为空]
+ * @param  {[type]}  obj [要判断的对象]
+ * @return {Boolean}     [description]
+ */
+function isEmpty(obj) {
+  for(var name in obj) {
+    return false
+  }
+  return true
+}
