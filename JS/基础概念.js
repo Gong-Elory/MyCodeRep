@@ -54,6 +54,23 @@ var handleObj = {
 window.addEventListener('click', handleObj, false);
 这个函数的第二个参数也可以是一个对象，只要这个对象有handleEvent方法就行，this指向的是这个对象
 
+2.跨域
+同源策略： 协议，域名， 端口号相同
+可以跨域的三个标签   img,打点统计
+                     script,
+                     link
+使用jsonp解决 设置http header
+Access-Control-Allow-Origin 用逗号分开，或者*
+Access-Control-Allow-Header
+Access-Control-Allow-Methods
+
+3.cookie， seesionStorage，LocalStorage的区别
+cookie用来服务器与客户端通信的
+
+4.cookie储存量太小，只有4kb， 所有http请求都会带着，会影响获取资源的效率， 需要封装才能用
+HTML5的标准ls，最大容量为5M，API简单易用，不需要自己封装，建议使用try catch包起来
+
+
 
 
 

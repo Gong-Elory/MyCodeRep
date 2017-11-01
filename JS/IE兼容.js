@@ -1,3 +1,61 @@
+//事件代理
+function BindEvent(el, type, selector, fn) {
+    if (fn == null) {
+        fn = selector
+        selector = null
+    }
+   //当然，如果还要兼容IE78，需要加上attachEvent的兼容 
+    el.addEventListener(type, function(e){
+        let target = e.target
+        if(selector) {
+            let match =target.matches(selector)
+            match && fn.call(target, e)
+        } else {
+            fn(e)
+        }
+    })
+}
+
+//IE9+实现了带前缀的matchesSelector IE8不支持
+//以下方法很好地兼容了IE系列以及移动端
+Element.prototype.mathces = function() {
+    if(!Element.prototype.matches) {
+        Element.prototype.matchesSelector || Element.prototype.mozMatchesSlector || 
+        Element.prototype.webkitMatchesSelector || Element.prototype.msMatchesSelector || 
+        Element.prototype.oMatchesSelector || function(s) {
+            let matches = (this.document || this.ownerDocument).querySelectorAll(s)
+            let i = matches.lenth 
+            while (--i >= 0 && matches[i] !== this){}
+            return i > -1
+        } 
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 $(function () {
         //IE7、8下处理
         function ieChange(flag){
